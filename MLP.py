@@ -32,16 +32,18 @@ def create_neuron(num_out_weights):
     return neuron
     
 class MLP:
-    def __init__(self,num_layers,num_neurons,num_train_ex,learning_rate,momentum_rate,epoch):
+    def __init__(self,num_layers,num_neurons,learning_rate,momentum_rate,epoch,lengthdata,data_inputs,desired_outputs):
         self.nowEpoch = 0
         self.num_layers = num_layers
         self.num_neurons = num_neurons 
         self.learning_rate = learning_rate
         self.momentum_rate = momentum_rate
         self.epoch = epoch
-        self.num_train_ex = num_train_ex
-        self.data_inputs = [[0,0], [0,1], [1,0], [1,1]]
-        self.desired_outputs = [[0], [1], [1], [0]]
+        self.lengthdata = lengthdata
+        # self.data_inputs = [[0,0], [0,1], [1,0], [1,1]]
+        self.data_inputs = data_inputs
+        # self.desired_outputs = [[0], [1], [1], [0]]
+        self.desired_outputs = desired_outputs
         self.cost = [None] * num_neurons[num_layers - 1]
         self.full_cost = 0.0
         self.n = 1.0
@@ -101,7 +103,7 @@ class MLP:
                     else:
                         self.layer[i].neuron[j].actv = self.layer[i].neuron[j].z
                     
-                    # !!! NOW USE TANH
+                    # !!! This is Tanh
                     # self.layer[i].neuron[j].actv = tanh(self.layer[i].neuron[j].z)
                 
                 # for Output layers
@@ -109,7 +111,7 @@ class MLP:
                     # This is Sigmoid
                     self.layer[i].neuron[j].actv = 1.0 / (1.0 + (e ** (-1.0 * self.layer[i].neuron[j].z)))
                    
-                    # !!! NOW USE TANH
+                    # !!! This is Tanh
                     # self.layer[i].neuron[j].actv = tanh(self.layer[i].neuron[j].z)
                     
                     if test :
@@ -133,32 +135,32 @@ class MLP:
             # This is Derivative Sigmoid
             self.layer[self.num_layers - 1].neuron[j].dz = (self.layer[self.num_layers - 1].neuron[j].actv - self.desired_outputs[p][j]) * (self.layer[self.num_layers - 1].neuron[j].actv) * (1.0 - self.layer[self.num_layers - 1].neuron[j].actv)
             
-            # !!! NOW USE D_TANH
+            # This is Derivative_Tanh
             # self.layer[self.num_layers - 1].neuron[j].dz = (self.layer[self.num_layers - 1].neuron[j].actv - self.desired_outputs[p][j]) * d_tanh(self.layer[self.num_layers - 1].neuron[j].z)
             
             for k in range(0,self.num_neurons[self.num_layers - 2],1):
-                self.layer[self.num_layers - 2].neuron[k].dw[j] = (self.layer[self.num_layers - 1].neuron[j].dz * self.layer[self.num_layers - 2].neuron[k].actv)
+                self.layer[self.num_layers - 2].neuron[k].dw[j] = self.momentum_rate * (self.layer[self.num_layers - 1].neuron[j].dz * self.layer[self.num_layers - 2].neuron[k].actv)
                 self.layer[self.num_layers - 2].neuron[k].dactv = self.layer[self.num_layers - 2].neuron[k].out_weights[j] * self.layer[self.num_layers - 1].neuron[j].dz
-            self.layer[self.num_layers - 1].neuron[j].dbias = self.layer[self.num_layers - 1].neuron[j].dz
+            # self.layer[self.num_layers - 1].neuron[j].dbias = self.layer[self.num_layers - 1].neuron[j].dz
         
         # Hidden Layer
         for i in range((self.num_layers - 2),0,-1):
             for j in range(0,self.num_neurons[i],1):
                 
-                # This is ReLU
+                # This is Derivative ReLU
                 if (self.layer[i].neuron[j].z >= 0):
                     self.layer[i].neuron[j].dz = self.layer[i].neuron[j].dactv
                 else:
                     self.layer[i].neuron[j].dz = 0.0
                 
-                # !!! NOW USE D_TANH
+                # This is Derivative_Tanh
                 # self.layer[i].neuron[j].dz = d_tanh(self.layer[i].neuron[j].z)
                 
                 for k in range(0,self.num_neurons[i-1],1):
-                    self.layer[i - 1].neuron[k].dw[j] = self.layer[i].neuron[j].dz * self.layer[i-1].neuron[k].actv
+                    self.layer[i - 1].neuron[k].dw[j] = self.momentum_rate * self.layer[i].neuron[j].dz * self.layer[i-1].neuron[k].actv
                     if i > 1:
                         self.layer[i - 1].neuron[k].dactv = self.layer[i - 1].neuron[k].out_weights[j] * self.layer[i].neuron[j].dz
-                self.layer[i].neuron[j].dbias = self.layer[i].neuron[j].dz
+                # self.layer[i].neuron[j].dbias = self.layer[i].neuron[j].dz
     
     def load_input(self,i):
         for j in range(0,self.num_neurons[0],1):
@@ -167,7 +169,7 @@ class MLP:
         
     def train(self):
         for iterator in range(0,(self.epoch + 1),1):
-            for i in range(0,self.num_train_ex,1):
+            for i in range(0,self.lengthdata,1):
                 self.load_input(i)
                 self.forward(False)
                 self.compute_cost(i)
@@ -184,17 +186,9 @@ class MLP:
     def test(self):
         i = 0
         print('---------------------------------------------- Testing trained neural network ----------------------------------------------\n')
-        for k in range(self.num_train_ex):
+        for k in range(self.lengthdata):
             for i in range(self.num_neurons[0]):
                 print('Input',i,':', self.data_inputs[k][i])
                 self.layer[0].neuron[i].actv = self.data_inputs[k][i]
             self.forward(True)
         print('---------------------------------------------- Testing trained neural network ----------------------------------------------\n')
-                    
-                    
-                    
-        
-        
-        
-        
-    
