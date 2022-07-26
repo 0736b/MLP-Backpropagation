@@ -1,5 +1,4 @@
 from random import random
-from turtle import forward
 from utils.activationfunc import tanh, d_tanh, e
 from dataclasses import dataclass
 
@@ -34,6 +33,7 @@ def create_neuron(num_out_weights):
     
 class MLP:
     def __init__(self,num_layers,num_neurons,num_train_ex,learning_rate,momentum_rate,epoch):
+        self.nowEpoch = 0
         self.num_layers = num_layers
         self.num_neurons = num_neurons 
         self.learning_rate = learning_rate
@@ -92,18 +92,29 @@ class MLP:
                     # print('self.layer[',i-1,'].neuron[k].out_weights[j] =',self.layer[i-1].neuron[k].out_weights[j],'\n')
                     # print('self.layer[',i-1,',].neuron[k].actv =',self.layer[i-1].neuron[k].actv,'\n')
                     self.layer[i].neuron[j].z = self.layer[i].neuron[j].z + ((self.layer[i-1].neuron[k].out_weights[j]) * (self.layer[i-1].neuron[k].actv))
-                # ReLU for Hidden layers
+                # for Hidden layers
                 if i < (self.num_layers - 1):
+                    
+                    # This is ReLU
                     if (self.layer[i].neuron[j].z < 0.0):
                         self.layer[i].neuron[j].actv = 0.0
                     else:
                         self.layer[i].neuron[j].actv = self.layer[i].neuron[j].z
+                    
+                    # !!! NOW USE TANH
+                    # self.layer[i].neuron[j].actv = tanh(self.layer[i].neuron[j].z)
                 
-                # Sigmoid for Output layers
+                # for Output layers
                 else:
+                    # This is Sigmoid
                     self.layer[i].neuron[j].actv = 1.0 / (1.0 + (e ** (-1.0 * self.layer[i].neuron[j].z)))
+                   
+                    # !!! NOW USE TANH
+                    # self.layer[i].neuron[j].actv = tanh(self.layer[i].neuron[j].z)
+                    
                     if test :
-                        print('Output:', round(self.layer[i].neuron[j].actv),'\n')
+                        print('Output:', (self.layer[i].neuron[j].actv))
+                        print('Output (Rounded):', round(self.layer[i].neuron[j].actv),'\n')
     
     def compute_cost(self,i):
         tmpcost = 0.0
@@ -114,12 +125,17 @@ class MLP:
             tcost = tcost + self.cost[j]
         self.full_cost = (self.full_cost + tcost) / self.n
         self.n += 1.0
-        # print("Full Cost:", self.full_cost)
         
     def backprop(self,p):
         # Output layer
         for j in range(0,self.num_neurons[self.num_layers - 1],1):
+            
+            # This is Derivative Sigmoid
             self.layer[self.num_layers - 1].neuron[j].dz = (self.layer[self.num_layers - 1].neuron[j].actv - self.desired_outputs[p][j]) * (self.layer[self.num_layers - 1].neuron[j].actv) * (1.0 - self.layer[self.num_layers - 1].neuron[j].actv)
+            
+            # !!! NOW USE D_TANH
+            # self.layer[self.num_layers - 1].neuron[j].dz = (self.layer[self.num_layers - 1].neuron[j].actv - self.desired_outputs[p][j]) * d_tanh(self.layer[self.num_layers - 1].neuron[j].z)
+            
             for k in range(0,self.num_neurons[self.num_layers - 2],1):
                 self.layer[self.num_layers - 2].neuron[k].dw[j] = (self.layer[self.num_layers - 1].neuron[j].dz * self.layer[self.num_layers - 2].neuron[k].actv)
                 self.layer[self.num_layers - 2].neuron[k].dactv = self.layer[self.num_layers - 2].neuron[k].out_weights[j] * self.layer[self.num_layers - 1].neuron[j].dz
@@ -128,10 +144,16 @@ class MLP:
         # Hidden Layer
         for i in range((self.num_layers - 2),0,-1):
             for j in range(0,self.num_neurons[i],1):
+                
+                # This is ReLU
                 if (self.layer[i].neuron[j].z >= 0):
                     self.layer[i].neuron[j].dz = self.layer[i].neuron[j].dactv
                 else:
                     self.layer[i].neuron[j].dz = 0.0
+                
+                # !!! NOW USE D_TANH
+                # self.layer[i].neuron[j].dz = d_tanh(self.layer[i].neuron[j].z)
+                
                 for k in range(0,self.num_neurons[i-1],1):
                     self.layer[i - 1].neuron[k].dw[j] = self.layer[i].neuron[j].dz * self.layer[i-1].neuron[k].actv
                     if i > 1:
@@ -144,26 +166,27 @@ class MLP:
         # print(self.layer[0])
         
     def train(self):
-        for iterator in range(0,self.epoch,1):
+        for iterator in range(0,(self.epoch + 1),1):
             for i in range(0,self.num_train_ex,1):
                 self.load_input(i)
                 self.forward(False)
                 self.compute_cost(i)
                 self.backprop(i)
                 self.update_weights()
+            self.nowEpoch = iterator
     
     def printlayer(self):
-        print('_______________________________')
+        print('---------------------------------------------- Neural Network Details Epoch =',self.nowEpoch,'----------------------------------------------\n')
         for i in range(0, len(self.layer),1):
             print(self.layer[i],'\n')
-        print('_______________________________')
+        print('---------------------------------------------- Neural Network Details Epoch =',self.nowEpoch,'----------------------------------------------\n')
             
     def test(self):
         i = 0
         print('---------------------------------------------- Testing trained neural network ----------------------------------------------\n')
         for k in range(self.num_train_ex):
             for i in range(self.num_neurons[0]):
-                print('input',i,':', self.data_inputs[k][i])
+                print('Input',i,':', self.data_inputs[k][i])
                 self.layer[0].neuron[i].actv = self.data_inputs[k][i]
             self.forward(True)
         print('---------------------------------------------- Testing trained neural network ----------------------------------------------\n')
