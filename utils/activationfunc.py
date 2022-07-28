@@ -1,12 +1,30 @@
-e = 2.718281828459045
+import math
 
-# Hyperbolic Tangent function
-def tanh(x):
-    x = float(x)
-    minus_x = x * -1.0
-    return (((e ** x) - (e ** minus_x)) / ((e ** x) + (e ** minus_x)))
+def Tanh(value):
+    up = math.exp(value) - math.exp(-value)
+    down = math.exp(value) + math.exp(-value)
+    return float(up / down)
 
-# Derivative of Hyperbolic Tangent
-def d_tanh(x):
-    x = float(x)
-    return ((1.0 - (tanh(x) * tanh(x))))
+def d_Tanh(value):
+    return float(1.0 - pow(Tanh(value), 2))
+
+def Linear(value):
+    return float(value)
+
+def dLinear(value):
+    return 1.0
+
+def Sigmoid(value):
+    return float((1 / (1 + math.exp(-value))))
+
+def dSigmoid(value):
+    return float((value * (1 - value)))
+
+def Threshold(value):
+    if value > 0.0:
+        return 1.0
+    else:
+        return 0.0
+    
+def dThreshold(value):
+    return 0.0
