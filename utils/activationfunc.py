@@ -5,7 +5,7 @@ def Tanh(value):
     down = math.exp(value) + math.exp(-value)
     return float(up / down)
 
-def d_Tanh(value):
+def dTanh(value):
     return float(1.0 - pow(Tanh(value), 2))
 
 def Linear(value):
