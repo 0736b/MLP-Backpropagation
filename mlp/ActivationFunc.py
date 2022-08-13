@@ -13,6 +13,8 @@ class ActivationFunc:
             return Threshold(value)
         elif self.activationFn == 4:
             return Tanh(value)
+        elif self.activationFn == 5:
+            return Relu(value)
         else:
             return 0.0
         
@@ -25,6 +27,8 @@ class ActivationFunc:
             return dThreshold(value)
         elif self.activationFn == 4:
             return dTanh(value)
+        elif self.activationFn == 5:
+            return dRelu(value)
         else:
             return 0.0
         
@@ -37,5 +41,7 @@ def get_fn_name(act_num):
         return 'Threshold'
     elif act_num == 4:
         return 'Hyperbolic Tangent'
+    elif act_num == 5:
+        return 'ReLU'
     else:
         return 'None'        

@@ -28,3 +28,12 @@ def Threshold(value):
     
 def dThreshold(value):
     return 0.0
+
+def Relu(value):
+    return max(0, value)
+
+def dRelu(value):
+    if value <= 0:
+        return 0
+    else:
+        return 1
