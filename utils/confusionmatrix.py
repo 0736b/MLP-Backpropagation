@@ -39,3 +39,9 @@ class ConfusionMatrix:
         
     def get_accuracy(self):
         return self.accuracy
+    
+    def clear(self):
+        self.actual = []
+        self.predicted = []
+        self.column = [0] * 4
+        self.accuracy = 0.0

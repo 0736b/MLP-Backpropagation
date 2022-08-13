@@ -5,6 +5,7 @@ from mlp.ActivationFunc import get_fn_name
 from utils.crossvalidation import crossvalidation_10
 from utils.confusionmatrix import ConfusionMatrix
 from math import sqrt
+from random import shuffle
 
 # MLP template for Flood
 def flood(layer_list, actFn_list, momentum, learning_rate, max_epoch):
@@ -39,10 +40,15 @@ def flood(layer_list, actFn_list, momentum, learning_rate, max_epoch):
         length_train = len(data_inputs)
         model_training_error = 0.0
         for j in range(0, max_epoch, 1):
-            for k in range(0, length_train, 1):
-                model_training_error = mlp.train(data_inputs[k], output_labels[k], k, length_train, j)
+            input_shuffled = list(range(0,length_train))
+            shuffle(input_shuffled)
+            t = 0
+            for k in input_shuffled:
+                model_training_error = mlp.train(data_inputs[k], output_labels[k], t, length_train, j, 'predict', None)
+                t += 1
             if j == 0 or j == ((max_epoch / 2) - 1) or j == max_epoch - 1:
                 print(' @Epoch:', j+1, 'Error (on standardized data):', model_training_error)
+        # print(input_shuffled)
         # Testing with
         test_with_group = flood_dataset[i]['test_with_group']
         print('[+] Testing with data group:', test_with_group)
@@ -59,9 +65,11 @@ def flood(layer_list, actFn_list, momentum, learning_rate, max_epoch):
             show_inputs = test_data_inputs[z].copy()
             show_inputs = [round(de_standardization(i,m,s)) for i in show_inputs]
             de_predicted_output = round(de_standardization(predicted_output[0], m, s))
-            diff_square += pow((de_desired_output - de_predicted_output), 2)
+            predict_error = predicted_output[0] - test_output_labels[z][0]
+            diff_square += (predict_error ** 2)
             print('- Input:',show_inputs,'| Desired output:', de_desired_output, '| Predicted output:', de_predicted_output, '| Error:', de_desired_output - de_predicted_output)
-        error = sqrt((1.0/n) * diff_square)
+        error = diff_square / float(length_test)
+        error = sqrt(error)
         print('Fold :', i+1, 'Root Mean Square Error:', error)
         all_folds_error.append(error)
         sum_error += error
@@ -100,19 +108,24 @@ def cross(layer_list, actFn_list, momentum, learning_rate, max_epoch):
         data_inputs = cross_dataset[i]['train_data_inputs']
         output_labels = cross_dataset[i]['train_output_labels']
         length_train = len(data_inputs)
-        model_training_error = 0.0
+        model_training_acc = 0.0
+        cm_train = ConfusionMatrix([[1,0], [0,1]])
         for j in range(0, max_epoch, 1):
-            for k in range(0, length_train, 1):
-                model_training_error = mlp.train(data_inputs[k], output_labels[k], k, length_train, j)
-            if j == 0 or j == ((max_epoch / 2) - 1) or j == max_epoch - 1:
-                print(' @Epoch:', j+1, 'Error:', model_training_error)
+            input_shuffled = list(range(0,length_train))
+            shuffle(input_shuffled)
+            t = 0
+            for k in input_shuffled:
+                model_training_acc = mlp.train(data_inputs[k], output_labels[k], t, length_train, j, 'classify', cm_train)
+                t += 1
+            # if j == 0 or j == ((max_epoch / 2) - 1) or j == max_epoch - 1:
+            print(' @Epoch:', j+1, 'Accuracy:', model_training_acc)
         # Testing with
         test_with_group = cross_dataset[i]['test_with_group']
         print('[+] Testing with data group:', test_with_group)
         test_data_inputs = cross_dataset[i]['test_data_inputs']
         test_output_labels = cross_dataset[i]['test_output_labels']
         length_test = len(test_data_inputs)
-        cm = ConfusionMatrix([[1,0], [0,1]])
+        cm_test = ConfusionMatrix([[1,0], [0,1]])
         sleep(1)
         print('  Result (raw)')
         for z in range(0, length_test, 1):
@@ -127,25 +140,21 @@ def cross(layer_list, actFn_list, momentum, learning_rate, max_epoch):
             elif r_predicted[0] < r_predicted[1]:
                 r_predicted[0] = 0
                 r_predicted[1] = 1
-            # print(desired_output)
-            # print(r_predicted)
+
             if (desired_output == r_predicted):
                 symbol = true_symbol
             else:
                 symbol = false_symbol
             print('- Input:',show_inputs,'| Desired output:', desired_output, '| Predicted output:', r_predicted, 'is', symbol)
-            cm.add_data(desired_output, r_predicted)
-        # print('Fold :', i+1, 'Root Mean Square Error:', error)
-        # all_folds_error.append(error)
+            cm_test.add_data(desired_output, r_predicted)
+
         print('\n','  Result (Confusion-Matrix)','\n')
-        cm.calc_column()
-        cm.print()
-        sum_accuracy += cm.get_accuracy()
-        all_accuracy.append(cm.get_accuracy())
-        print('\n','  Fold:',i+1,'| Accuracy:',cm.get_accuracy())
+        cm_test.calc_column()
+        cm_test.print()
+        sum_accuracy += cm_test.get_accuracy()
+        all_accuracy.append(cm_test.get_accuracy())
+        print('\n','  Fold:',i+1,'| Accuracy:',cm_test.get_accuracy())
         print('-----------------------------------------------------')
         sleep(1.5)
     print('Average Accuracy:', (sum_accuracy) / 10)
     print('Max Accuracy:', max(all_accuracy), 'on Fold:', all_accuracy.index(max(all_accuracy)) + 1)
-        
-        

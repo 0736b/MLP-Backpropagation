@@ -31,18 +31,36 @@ class MultilayerPerceptron:
             error = self.layers[i].getError()
             self.layers[i].updateWeights(self.momentum, self.learning_rate, self.layers[i - 1].getOutput())
     
-    def train(self, inp, expectedOutput, datapos, lengthdata, epoch):
-        error = 0.0
-        actualOutput = self.feedForward(inp)
-        self.backpropagate(actualOutput, expectedOutput)
-        n = datapos + 1
-        for i in range(0, len(expectedOutput), 1):
-            self.diff_sum += pow(expectedOutput[i] - actualOutput[i], 2)
-        if datapos + 1 == lengthdata:
-            # print('epoch :',epoch,'error :', sqrt((1.0 / n) * self.diff_sum))
-            error = sqrt((1.0 / n) * self.diff_sum)
-            self.diff_sum = 0.0
-            return error
+    def train(self, inp, expectedOutput, datapos, lengthdata, epoch, mode, cm):
+        if mode == 'predict':
+            error = 0.0
+            actualOutput = self.feedForward(inp)
+            n = datapos + 1
+            self.backpropagate(actualOutput, expectedOutput)
+            for i in range(0, len(expectedOutput), 1):
+                self.diff_sum += pow(expectedOutput[i] - actualOutput[i], 2)
+            if datapos + 1 == lengthdata:
+                # print('epoch :',epoch,'error :', sqrt((1.0 / n) * self.diff_sum))
+                error = sqrt((1.0 / n) * self.diff_sum)
+                self.diff_sum = 0.0
+                return error
+        
+        elif mode == 'classify':
+            actualOutput = self.feedForward(inp)
+            t_actual = actualOutput.copy()
+            self.backpropagate(actualOutput, expectedOutput)
+            if t_actual[0] > t_actual[1]:
+                t_actual[0] = 1
+                t_actual[1] = 0
+            elif t_actual[0] < t_actual[1]:
+                t_actual[0] = 0
+                t_actual[1] = 1
+            cm.add_data(expectedOutput, t_actual)
+            if datapos + 1 == lengthdata:
+                cm.calc_column()
+                acc = cm.get_accuracy()
+                cm.clear()
+                return acc
             
         
     def test(self, inp):

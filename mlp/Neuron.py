@@ -12,7 +12,7 @@ class Neuron:
         self.fn = ActivationFunc(activationFn)
         
     def initialize(self):
-        self.bias = round(random(), 2)
+        self.bias = 1.0
         for i in range(0, len(self.weights),1):
             self.weights[i] = round(random(), 2)
             
@@ -42,8 +42,8 @@ class Neuron:
         return self.bias
     
     def updateWeights(self, momentum, learning_rate, prevOutput):
-        self.biasDifference = momentum * self.biasDifference + learning_rate * self.delta
-        self.bias = self.bias + self.biasDifference
+        # self.biasDifference = momentum * self.biasDifference + learning_rate * self.delta
+        # self.bias = self.bias + self.biasDifference
         for i in range(0, len(self.weights),1):
             self.weightDifference[i] = momentum * self.weightDifference[i] + learning_rate * self.delta * prevOutput[i]
             self.weights[i] = self.weights[i] + self.weightDifference[i]
