@@ -260,26 +260,3 @@ def get_inputoutputfromrow(row,filename):
         row_output = [int(i) for i in row_output]
         
         return row_input, row_output
-        
-
-    
-
-        
-    
-
-
-# data = get_datarow('Flood_dataset.txt')
-# print(data)
-# print(len(data))
-# row_i, row_o = get_inputoutputfromrow(data[0], 'Flood_dataset.txt')
-# print(data[0])
-# print('input', row_i)
-# print('output', row_o)
-
-# data = get_datarow('cross.pat')
-# print(data)
-# print(len(data))
-# row_i, row_o = get_inputoutputfromrow(data[0], 'cross.pat')
-# print(data[0])
-# print('input', row_i)
-# print('output', row_o)

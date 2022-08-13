@@ -58,12 +58,3 @@ def crossvalidation_10(data, filename):
         
         all_testset.append(testset)
     return all_testset
-    
-# data = get_datarow('cross.pat')
-# cross_dataset = crossvalidation_10(data, 'cross.pat')
-# print(cross_dataset[0])
-
-# data = get_datarow('Flood_dataset.txt')
-# flood_dataset = crossvalidation_10(data, 'Flood_dataset.txt')
-# print((flood_dataset[0]['test_data_inputs']))
-# print((flood_dataset[0]['test_output_labels']))
