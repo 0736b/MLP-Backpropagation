@@ -9,6 +9,9 @@ from random import shuffle
 
 # MLP template for Flood
 def flood(layer_list, actFn_list, momentum, learning_rate, max_epoch):
+    # For plotting
+    data_for_plot = [[[],[]]] * 10
+    # Printing spec
     print('------------- Multi-layer Perceptron | Specs -------------')
     print('[+] Input layer :', layer_list[0], 'Neurons')
     for i in range(1, len(layer_list)-1, 1):
@@ -46,6 +49,8 @@ def flood(layer_list, actFn_list, momentum, learning_rate, max_epoch):
             for k in input_shuffled:
                 model_training_error = mlp.train(data_inputs[k], output_labels[k], t, length_train, j, 'predict', None)
                 t += 1
+            # collecting data for plotting
+            data_for_plot[i][0].append(model_training_error)
             if j == 0 or j == ((max_epoch / 2) - 1) or j == max_epoch - 1:
                 print(' @Epoch:', j+1, 'Error (on standardized data):', model_training_error)
         # print(input_shuffled)
@@ -72,14 +77,21 @@ def flood(layer_list, actFn_list, momentum, learning_rate, max_epoch):
         error = sqrt(error)
         print('Fold :', i+1, 'Root Mean Square Error:', error)
         all_folds_error.append(error)
+        data_for_plot[i][1].append(error)
         sum_error += error
         print('-----------------------------------------------------')
         sleep(1.5)
     print('Average Root Mean Square Error:', (sum_error) / 10)
     print('Lowest Root Mean Square Error:', min(all_folds_error), 'on Fold:', all_folds_error.index(min(all_folds_error)) + 1)
+    min_idx = min(all_folds_error)
+    max_idx = max(all_folds_error)
+    return data_for_plot, min_idx, max_idx
 
 # MLP template for Cross       
 def cross(layer_list, actFn_list, momentum, learning_rate, max_epoch):
+    # For plotting
+    data_for_plot = [[[],[]]] * 10
+    # Printing spec
     print('------------- Multi-layer Perceptron | Specs -------------')
     print('[+] Input layer :', layer_list[0], 'Neurons')
     for i in range(1, len(layer_list)-1, 1):
@@ -117,8 +129,10 @@ def cross(layer_list, actFn_list, momentum, learning_rate, max_epoch):
             for k in input_shuffled:
                 model_training_acc = mlp.train(data_inputs[k], output_labels[k], t, length_train, j, 'classify', cm_train)
                 t += 1
-            # if j == 0 or j == ((max_epoch / 2) - 1) or j == max_epoch - 1:
-            print(' @Epoch:', j+1, 'Accuracy:', model_training_acc)
+            if j == 0 or j == ((max_epoch / 2) - 1) or j == max_epoch - 1:
+                print(' @Epoch:', j+1, 'Accuracy:', model_training_acc)
+            data_for_plot[i][0].append(cm_train)
+            cm_train.clear()
         # Testing with
         test_with_group = cross_dataset[i]['test_with_group']
         print('[+] Testing with data group:', test_with_group)
@@ -153,8 +167,11 @@ def cross(layer_list, actFn_list, momentum, learning_rate, max_epoch):
         cm_test.print()
         sum_accuracy += cm_test.get_accuracy()
         all_accuracy.append(cm_test.get_accuracy())
+        data_for_plot[i][1].append(cm_test)
         print('\n','  Fold:',i+1,'| Accuracy:',cm_test.get_accuracy())
         print('-----------------------------------------------------')
         sleep(1.5)
     print('Average Accuracy:', (sum_accuracy) / 10)
     print('Max Accuracy:', max(all_accuracy), 'on Fold:', all_accuracy.index(max(all_accuracy)) + 1)
+    max_idx = max(all_accuracy)
+    return data_for_plot, max_idx

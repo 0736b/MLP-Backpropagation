@@ -59,7 +59,6 @@ class MultilayerPerceptron:
             if datapos + 1 == lengthdata:
                 cm.calc_column()
                 acc = cm.get_accuracy()
-                cm.clear()
                 return acc
             
         
