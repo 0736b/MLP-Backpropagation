@@ -45,3 +45,7 @@ class ConfusionMatrix:
         self.predicted = []
         self.column = [0] * 4
         self.accuracy = 0.0
+        
+    def get(self):
+        form_array = [[self.column[0],self.column[1]],[self.column[2],self.column[3]]]
+        return form_array
