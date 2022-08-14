@@ -93,7 +93,8 @@ def flood(layer_list, actFn_list, momentum, learning_rate, max_epoch):
 # MLP template for Cross       
 def cross(layer_list, actFn_list, momentum, learning_rate, max_epoch):
     # For plotting
-    data_for_plot = [[[],[]]] * 10
+    trained_for_plot = []
+    tested_for_plot = []
     # Printing spec
     print('------------- Multi-layer Perceptron | Specs -------------')
     print('[+] Input layer :', layer_list[0], 'Neurons')
@@ -113,6 +114,7 @@ def cross(layer_list, actFn_list, momentum, learning_rate, max_epoch):
     sum_accuracy = 0.0
     all_accuracy = []
     for i in range(0, 10,1):
+        t_cm_trained = [None] * max_epoch
         print('Fold :', i+1)
         # Init MLP
         mlp = MLP(layer_list, actFn_list, momentum, learning_rate)
@@ -134,9 +136,10 @@ def cross(layer_list, actFn_list, momentum, learning_rate, max_epoch):
                 t += 1
             if j == 0 or j == ((max_epoch / 2) - 1) or j == max_epoch - 1:
                 print(' @Epoch:', j+1, 'Accuracy:', model_training_acc)
-            data_for_plot[i][0].append(cm_train)
+            t_cm_trained[j] = copy.deepcopy(cm_train)
             cm_train.clear()
         # Testing with
+        trained_for_plot.append(t_cm_trained.copy())
         test_with_group = cross_dataset[i]['test_with_group']
         print('[+] Testing with data group:', test_with_group)
         test_data_inputs = cross_dataset[i]['test_data_inputs']
@@ -170,11 +173,12 @@ def cross(layer_list, actFn_list, momentum, learning_rate, max_epoch):
         cm_test.print()
         sum_accuracy += cm_test.get_accuracy()
         all_accuracy.append(cm_test.get_accuracy())
-        data_for_plot[i][1].append(cm_test)
+        tested_for_plot.append(copy.deepcopy(cm_test))
         print('\n','  Fold:',i+1,'| Accuracy:',cm_test.get_accuracy())
         print('-----------------------------------------------------')
         # sleep(1.5)
     print('Average Accuracy:', (sum_accuracy) / 10)
     print('Max Accuracy:', max(all_accuracy), 'on Fold:', all_accuracy.index(max(all_accuracy)) + 1)
-    max_idx = max(all_accuracy)
-    return data_for_plot, max_idx
+    max_idx = all_accuracy.index(max(all_accuracy))
+    avg_acc = (sum_accuracy) / 10
+    return trained_for_plot, tested_for_plot, max_idx, avg_acc
