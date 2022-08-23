@@ -5,6 +5,7 @@ class ConfusionMatrix:
         self.predicted = []
         self.column = [0] * 4
         self.accuracy = 0.0
+        self.misclass = 0.0
     
     def add_data(self, actual, predicted):
         self.actual.append(actual)
@@ -25,6 +26,7 @@ class ConfusionMatrix:
             elif (self.all_output[1] == self.actual[i]) and (self.actual[i] != self.predicted[i]):
                 self.column[2] += 1
             self.accuracy = float((self.column[0] + self.column[3]) / len(self.actual))
+            self.misclass = float((self.column[1] + self.column[2]) / len(self.actual))
     
     def print(self):
         print('                             Predicted')
@@ -35,16 +37,19 @@ class ConfusionMatrix:
         print('      Actual   +--------+')
         print('               |', self.all_output[1], '|  ', self.column[2], '      ', self.column[3], '      ')
         print('               +--------+')
-        # print('\n','Accuracy:', self.accuracy)
         
     def get_accuracy(self):
         return self.accuracy
+    
+    def get_misclass(self):
+        return self.misclass
     
     def clear(self):
         self.actual = []
         self.predicted = []
         self.column = [0] * 4
         self.accuracy = 0.0
+        self.misclass = 0.0
         
     def get(self):
         form_array = [[self.column[0],self.column[1]],[self.column[2],self.column[3]]]

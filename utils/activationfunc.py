@@ -20,15 +20,6 @@ def Sigmoid(value):
 def dSigmoid(value):
     return float((value * (1 - value)))
 
-def Threshold(value):
-    if value > 0.0:
-        return 1.0
-    else:
-        return 0.0
-    
-def dThreshold(value):
-    return 0.0
-
 def Relu(value):
     return max(0, value)
 

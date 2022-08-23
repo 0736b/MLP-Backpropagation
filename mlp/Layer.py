@@ -1,24 +1,24 @@
 from mlp.Neuron import Neuron
 
 class Layer:
-    def __init__(self, neuronCount, weightCount, activationFn):
+    def __init__(self, neuronCount, weightCount, actFn):
         self.neuronCount = neuronCount
         self.weightCount = weightCount
         self.neurons = [None] * neuronCount
         for i in range(0, neuronCount, 1):
-            self.neurons[i] = Neuron(weightCount, activationFn)
+            self.neurons[i] = Neuron(weightCount, actFn)
         
-    def initialize(self, l):
+    def init(self, l):
         if l == 0:
             for i in range(0, len(self.neurons), 1):
                 self.neurons[i].setWeight(i, 1.0)
         for i in range(0, len(self.neurons),1):
-            self.neurons[i].initialize()
+            self.neurons[i].init()
             
-    def compute(self, inp):
+    def calc(self, inp):
         self.output = [None] * len(self.neurons)
         for i in range(0, len(self.neurons),1):
-            self.output[i] = self.neurons[i].compute(inp)
+            self.output[i] = self.neurons[i].calc(inp)
         return self.output
     
     def getNeuronCount(self):
@@ -31,7 +31,7 @@ class Layer:
         for i in range(0, len(self.neurons),1):
             self.neurons[i].setDelta(error[i])
             
-    def calculateError(self):
+    def calcError(self):
         self.error = [None] * self.weightCount
         for i in range(0, self.weightCount,1):
             for j in range(0, len(self.neurons),1):

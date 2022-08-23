@@ -1,5 +1,6 @@
 from mlp.Layer import Layer
 from math import sqrt
+import copy
 
 class MultilayerPerceptron:
     def __init__(self, neuronCount, activationFnList, momentum, learning_rate):
@@ -10,57 +11,58 @@ class MultilayerPerceptron:
         prevNeuronCount = neuronCount[0]
         for i in range(0, len(neuronCount),1):
             self.layers[i] = Layer(neuronCount[i], prevNeuronCount, activationFnList[i])
-            self.layers[i].initialize(i)
+            self.layers[i].init(i)
             prevNeuronCount = neuronCount[i]
 
-    def feedForward(self,inp):
+    def forward_pass(self,inp):
         output = inp
         for i in range(0, len(self.layers),1):
-            output = self.layers[i].compute(inp)
+            output = self.layers[i].calc(inp)
             inp = output
         return output
         
-    def backpropagate(self, actualOutput, expectedOutput):
+    def backward_pass(self, actualOutput, desiredOutput):
         outputLayer = self.layers[len(self.layers) - 1]
         error = [None] * outputLayer.getNeuronCount()
         for i in range(0, len(error),1):
-            error[i] = expectedOutput[i] - actualOutput[i]
+            error[i] = desiredOutput[i] - actualOutput[i]
+        t_error = copy.deepcopy(error)
         for i in range(len(self.layers) - 1, 0, -1):
             self.layers[i].setDelta(error)
-            self.layers[i].calculateError()
+            self.layers[i].calcError()
             error = self.layers[i].getError()
             self.layers[i].updateWeights(self.momentum, self.learning_rate, self.layers[i - 1].getOutput())
+        return t_error
     
-    def train(self, inp, expectedOutput, datapos, lengthdata, epoch, mode, cm):
-        if mode == 'predict':
+    def train(self, inp, desiredOutput, datapos, lengthdata, mode, cm):
+        if mode == 'regression':
             error = 0.0
-            actualOutput = self.feedForward(inp)
+            actualOutput = self.forward_pass(inp)
             n = datapos + 1
-            self.backpropagate(actualOutput, expectedOutput)
-            for i in range(0, len(expectedOutput), 1):
-                self.diff_sum += pow(expectedOutput[i] - actualOutput[i], 2)
-            if datapos + 1 == lengthdata:
-                # print('epoch :',epoch,'error :', sqrt((1.0 / n) * self.diff_sum))
-                error = sqrt((1.0 / n) * self.diff_sum)
+            t_err = self.backward_pass(actualOutput, desiredOutput)
+            for e in t_err:
+                self.diff_sum += e ** 2
+            error = sqrt(self.diff_sum / n)
+            if n == lengthdata:
+                error = sqrt(self.diff_sum / n)
                 self.diff_sum = 0.0
                 return error
-        
-        elif mode == 'classify':
-            actualOutput = self.feedForward(inp)
+        elif mode == 'classification':
+            acc = 0.0
+            actualOutput = self.forward_pass(inp)
             t_actual = actualOutput.copy()
-            self.backpropagate(actualOutput, expectedOutput)
+            self.backward_pass(actualOutput, desiredOutput)
             if t_actual[0] > t_actual[1]:
                 t_actual[0] = 1
                 t_actual[1] = 0
             elif t_actual[0] < t_actual[1]:
                 t_actual[0] = 0
                 t_actual[1] = 1
-            cm.add_data(expectedOutput, t_actual)
-            if datapos + 1 == lengthdata:
+            cm.add_data(desiredOutput, t_actual)
+            if (datapos + 1) == lengthdata:
                 cm.calc_column()
                 acc = cm.get_accuracy()
                 return acc
             
-        
     def test(self, inp):
-        return self.feedForward(inp)    
+        return self.forward_pass(inp)    

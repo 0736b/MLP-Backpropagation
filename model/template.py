@@ -12,7 +12,7 @@ def flood(layer_list, actFn_list, momentum, learning_rate, max_epoch):
     # For plotting
     trained_for_plot = []
     # Printing spec
-    print('------------- Multi-layer Perceptron | Specs -------------')
+    print('\n------------- Multi-layer Perceptron | Specs -------------')
     print('[+] Input layer :', layer_list[0], 'Neurons')
     for i in range(1, len(layer_list)-1, 1):
         print('[+] Hidden Layer', i, ":", layer_list[i], 'Neurons','( Activation Function:', get_fn_name(actFn_list[i]), ')')
@@ -24,7 +24,7 @@ def flood(layer_list, actFn_list, momentum, learning_rate, max_epoch):
     # Loading Data
     datas, m, s = get_datafornorm('Flood_dataset.txt')
     # Standardize Data
-    norm_list, d_notuse, o_notuse = standardization(datas,m,s)
+    norm_list = standardization(datas,m,s)
     # Crossvalidation 10 folds
     flood_dataset = crossvalidation_10(norm_list, 'Flood_dataset.txt')
     all_folds_error = []
@@ -43,20 +43,18 @@ def flood(layer_list, actFn_list, momentum, learning_rate, max_epoch):
         output_labels = flood_dataset[i]['train_output_labels']
         length_train = len(data_inputs)
         model_training_error = 0.0
+        input_shuffled = list(range(0,length_train))
         for j in range(0, max_epoch, 1):
-            input_shuffled = list(range(0,length_train))
             shuffle(input_shuffled)
             t = 0
             for k in input_shuffled:
-                model_training_error = mlp.train(data_inputs[k], output_labels[k], t, length_train, j, 'predict', None)
+                model_training_error = mlp.train(data_inputs[k], output_labels[k], t, length_train, 'regression', None)
                 t += 1
             # collecting data for plotting
             t_epoch_error[j] = (model_training_error)
-            # print(i, len(data_for_plot[i][0]))
             if j == 0 or j == ((max_epoch / 2) - 1) or j == max_epoch - 1:
                 print(' @Epoch:', j+1, 'Error (on standardized data):', model_training_error)
         trained_for_plot.append(copy.deepcopy(t_epoch_error))
-        # print(input_shuffled)
         # Testing with
         test_with_group = flood_dataset[i]['test_with_group']
         print('[+] Testing with data group:', test_with_group)
@@ -64,10 +62,8 @@ def flood(layer_list, actFn_list, momentum, learning_rate, max_epoch):
         test_output_labels = flood_dataset[i]['test_output_labels']
         length_test = len(test_data_inputs)
         diff_square = 0.0
-        # sleep(1)
         print(' Result in de-standardized')
         for z in range(0, length_test, 1):
-            n = z+1
             de_desired_output = round(de_standardization(test_output_labels[z][0],m,s))
             predicted_output = mlp.test(test_data_inputs[z])
             show_inputs = test_data_inputs[z].copy()
@@ -82,7 +78,6 @@ def flood(layer_list, actFn_list, momentum, learning_rate, max_epoch):
         all_folds_error.append(error)
         sum_error += error
         print('-----------------------------------------------------')
-        # sleep(1.5)
     print('Average Root Mean Square Error:', (sum_error) / 10)
     print('Lowest Root Mean Square Error:', min(all_folds_error), 'on Fold:', all_folds_error.index(min(all_folds_error)) + 1)
     min_idx = all_folds_error.index(min(all_folds_error))
@@ -90,13 +85,13 @@ def flood(layer_list, actFn_list, momentum, learning_rate, max_epoch):
     tested_for_plot = all_folds_error.copy()
     return trained_for_plot, tested_for_plot, min_idx, avg_error_all_fold
 
-# MLP template for Cross       
+# MLP template for Cross     
 def cross(layer_list, actFn_list, momentum, learning_rate, max_epoch):
     # For plotting
     trained_for_plot = []
     tested_for_plot = []
     # Printing spec
-    print('------------- Multi-layer Perceptron | Specs -------------')
+    print('\n------------- Multi-layer Perceptron | Specs -------------')
     print('[+] Input layer :', layer_list[0], 'Neurons')
     for i in range(1, len(layer_list)-1, 1):
         print('[+] Hidden Layer', i, ":", layer_list[i], 'Neurons','( Activation Function:', get_fn_name(actFn_list[i]), ')')
@@ -112,6 +107,7 @@ def cross(layer_list, actFn_list, momentum, learning_rate, max_epoch):
     true_symbol = '✅'
     false_symbol = '❌'
     sum_accuracy = 0.0
+    sum_misclass = 0.0
     all_accuracy = []
     for i in range(0, 10,1):
         t_cm_trained = [None] * max_epoch
@@ -127,12 +123,12 @@ def cross(layer_list, actFn_list, momentum, learning_rate, max_epoch):
         length_train = len(data_inputs)
         model_training_acc = 0.0
         cm_train = ConfusionMatrix([[1,0], [0,1]])
+        input_shuffled = list(range(0,length_train))
         for j in range(0, max_epoch, 1):
-            input_shuffled = list(range(0,length_train))
             shuffle(input_shuffled)
             t = 0
             for k in input_shuffled:
-                model_training_acc = mlp.train(data_inputs[k], output_labels[k], t, length_train, j, 'classify', cm_train)
+                model_training_acc = mlp.train(data_inputs[k], output_labels[k], t, length_train, 'classification', cm_train)
                 t += 1
             if j == 0 or j == ((max_epoch / 2) - 1) or j == max_epoch - 1:
                 print(' @Epoch:', j+1, 'Accuracy:', model_training_acc)
@@ -146,7 +142,6 @@ def cross(layer_list, actFn_list, momentum, learning_rate, max_epoch):
         test_output_labels = cross_dataset[i]['test_output_labels']
         length_test = len(test_data_inputs)
         cm_test = ConfusionMatrix([[1,0], [0,1]])
-        # sleep(1)
         print('  Result (raw)')
         for z in range(0, length_test, 1):
             symbol = ''
@@ -160,24 +155,24 @@ def cross(layer_list, actFn_list, momentum, learning_rate, max_epoch):
             elif r_predicted[0] < r_predicted[1]:
                 r_predicted[0] = 0
                 r_predicted[1] = 1
-
             if (desired_output == r_predicted):
                 symbol = true_symbol
             else:
                 symbol = false_symbol
             print('- Input:',show_inputs,'| Desired output:', desired_output, '| Predicted output:', r_predicted, 'is', symbol)
             cm_test.add_data(desired_output, r_predicted)
-
         print('\n','  Result (Confusion-Matrix)','\n')
         cm_test.calc_column()
         cm_test.print()
         sum_accuracy += cm_test.get_accuracy()
+        sum_misclass += cm_test.get_misclass()
         all_accuracy.append(cm_test.get_accuracy())
         tested_for_plot.append(copy.deepcopy(cm_test))
         print('\n','  Fold:',i+1,'| Accuracy:',cm_test.get_accuracy())
+        print('   Fold:',i+1,'| Misclassification:',cm_test.get_misclass())
         print('-----------------------------------------------------')
-        # sleep(1.5)
     print('Average Accuracy:', (sum_accuracy) / 10)
+    print('Average Misclassification:', (sum_misclass) / 10)
     print('Max Accuracy:', max(all_accuracy), 'on Fold:', all_accuracy.index(max(all_accuracy)) + 1)
     max_idx = all_accuracy.index(max(all_accuracy))
     avg_acc = (sum_accuracy) / 10

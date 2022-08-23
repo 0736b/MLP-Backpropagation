@@ -1,26 +1,28 @@
 from mlp.ActivationFunc import ActivationFunc
-from random import random
+from random import uniform
 
 class Neuron:
-    def __init__(self, weightCount, activationFn):
+    def __init__(self, weightCount, actFn):
         self.output = 0.0
         self.weights = [0.0] * weightCount
         self.bias = 0.0
-        self.biasDifference = 0.0
         self.delta = 0.0
-        self.weightDifference = [0.0] * weightCount
-        self.fn = ActivationFunc(activationFn)
+        self.weightDiff = [0.0] * weightCount
+        self.fn = ActivationFunc(actFn)
         
-    def initialize(self):
+    def init(self):
         self.bias = 1.0
         for i in range(0, len(self.weights),1):
-            self.weights[i] = round(random(), 2)
+            t_weight = round(uniform(-1,1), 2)
+            if t_weight == 0.00:
+                t_weight = 0.01
+            self.weights[i] = t_weight
             
-    def compute(self, inp):
+    def calc(self, inp):
         sum = self.bias
         for i in range(0, len(self.weights),1):
             sum = sum + inp[i] * self.weights[i]
-        self.output = self.fn.activate(sum)
+        self.output = self.fn.act(sum)
         return self.output
     
     def getOutput(self):
@@ -33,7 +35,7 @@ class Neuron:
         self.weights[i] = weight
         
     def setDelta(self, error):
-        self.delta = error * self.fn.activateDerivative(self.output)
+        self.delta = error * self.fn.actDeriv(self.output)
         
     def getDelta(self):
         return self.delta
@@ -42,8 +44,6 @@ class Neuron:
         return self.bias
     
     def updateWeights(self, momentum, learning_rate, prevOutput):
-        # self.biasDifference = momentum * self.biasDifference + learning_rate * self.delta
-        # self.bias = self.bias + self.biasDifference
         for i in range(0, len(self.weights),1):
-            self.weightDifference[i] = momentum * self.weightDifference[i] + learning_rate * self.delta * prevOutput[i]
-            self.weights[i] = self.weights[i] + self.weightDifference[i]
+            self.weightDiff[i] = momentum * self.weightDiff[i] + (learning_rate * self.delta * prevOutput[i])
+            self.weights[i] = self.weights[i] + self.weightDiff[i]
