@@ -275,10 +275,10 @@ if __name__ == '__main__':
     plt_flood_lastepoch(res_trained_floodno3, res_tested_floodno3, '8-8-1 LR=0.01 MR=0.01')
     plt_flood_lastepoch(res_trained_floodno4, res_tested_floodno4, '8-2-2-1 LR=0.01 MR=0.01')
     
-    er_trained_1 = pd.DataFrame([float(er) for er in res_trained_floodno1[min_idx_floodno1]], index=idx_epoch_flood, columns=['8-4-1    LR=0.01 MR=0.01'])
-    er_trained_2 = pd.DataFrame([float(er) for er in res_trained_floodno2[min_idx_floodno2]], index=idx_epoch_flood, columns=['8-4-1    LR=0.05 MR=0.02'])
-    er_trained_3 = pd.DataFrame([float(er) for er in res_trained_floodno3[min_idx_floodno3]], index=idx_epoch_flood, columns=['8-8-1    LR=0.01 MR=0.01'])
-    er_trained_4 = pd.DataFrame([float(er) for er in res_trained_floodno4[min_idx_floodno4]], index=idx_epoch_flood, columns=['8-2-2-1 LR=0.01 MR=0.01'])
+    er_trained_1 = pd.DataFrame([float(er) for er in res_trained_floodno1[min_idx_floodno1]], index=idx_epoch_flood, columns=['Model 1: 8-4-1    LR=0.01 MR=0.01'])
+    er_trained_2 = pd.DataFrame([float(er) for er in res_trained_floodno2[min_idx_floodno2]], index=idx_epoch_flood, columns=['Model 2: 8-4-1    LR=0.05 MR=0.03'])
+    er_trained_3 = pd.DataFrame([float(er) for er in res_trained_floodno3[min_idx_floodno3]], index=idx_epoch_flood, columns=['Model 3: 8-8-1    LR=0.01 MR=0.01'])
+    er_trained_4 = pd.DataFrame([float(er) for er in res_trained_floodno4[min_idx_floodno4]], index=idx_epoch_flood, columns=['Model 4: 8-2-2-1 LR=0.01 MR=0.01'])
     er_trained_1.index.name = 'Epoch'
     er_trained_2.index.name = 'Epoch'
     er_trained_3.index.name = 'Epoch'
@@ -309,16 +309,16 @@ if __name__ == '__main__':
     plt_cross_cf_matrix(res_trained_crossno4, 'Blues', 'trained','2-4-4-2 LR=0.01 MR=0.01')    
     plt_cross_cf_matrix(res_tested_crossno4, 'YlOrBr', 'tested', '2-4-4-2 LR=0.01 MR=0.01')
          
-    ac_trained1 = pd.DataFrame([cm.get_accuracy() for cm in res_trained_crossno1[max_idx_crossno1]], index=idx_epoch_cross, columns=['2-8-2    LR=0.01 MR=0.01'])
+    ac_trained1 = pd.DataFrame([cm.get_accuracy() for cm in res_trained_crossno1[max_idx_crossno1]], index=idx_epoch_cross, columns=['Model 1: 2-4-2    LR=0.01 MR=0.01'])
     ac_trained1.index.name = 'Epoch'
     
-    ac_trained2 = pd.DataFrame([cm.get_accuracy() for cm in res_trained_crossno2[max_idx_crossno2]], index=idx_epoch_cross, columns=['2-8-2    LR=0.005 MR=0.04'])
+    ac_trained2 = pd.DataFrame([cm.get_accuracy() for cm in res_trained_crossno2[max_idx_crossno2]], index=idx_epoch_cross, columns=['Model 2: 2-4-2    LR=0.005 MR=0.06'])
     ac_trained2.index.name = 'Epoch'
     
-    ac_trained3 = pd.DataFrame([cm.get_accuracy() for cm in res_trained_crossno3[max_idx_crossno3]], index=idx_epoch_cross, columns=['2-32-2  LR=0.01 MR=0.01'])
+    ac_trained3 = pd.DataFrame([cm.get_accuracy() for cm in res_trained_crossno3[max_idx_crossno3]], index=idx_epoch_cross, columns=['Model 3: 2-8-2    LR=0.01 MR=0.01'])
     ac_trained3.index.name = 'Epoch'
     
-    ac_trained4 = pd.DataFrame([cm.get_accuracy() for cm in res_trained_crossno4[max_idx_crossno4]], index=idx_epoch_cross, columns=['2-4-4-2 LR=0.01 MR=0.01'])
+    ac_trained4 = pd.DataFrame([cm.get_accuracy() for cm in res_trained_crossno4[max_idx_crossno4]], index=idx_epoch_cross, columns=['Model 4: 2-4-4-2 LR=0.01 MR=0.01'])
     ac_trained4.index.name = 'Epoch'
     
     merged_ac = pd.concat([ac_trained1, ac_trained2, ac_trained3, ac_trained4], axis=1)

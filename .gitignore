@@ -163,3 +163,5 @@ cython_debug/
 /saved
 *.zip
 *.data
+/attachments
+/report
